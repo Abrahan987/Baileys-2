@@ -477,10 +477,13 @@ export const makeChatsSocket = (config: SocketConfig) => {
 	 * Reports a single user to WhatsApp as spam (equivalent to "Report" in the official app).
 	 * Optionally blocks the user afterwards, like the "Report and block" option.
 	 *
+	 * `spamFlow` is the WA Web surface identifier (snake_case, e.g. 'account_info_report',
+	 * 'overflow_menu_report', 'block_dialog'); defaults to 'account_info_report'.
+	 *
 	 * This only sends one report for one user and has no bulk mode on purpose:
 	 * use it for real spam/abuse, not to harass people.
 	 */
-	const reportUser = async (jid: string, options: { block?: boolean } = {}) => {
+	const reportUser = async (jid: string, options: { block?: boolean; spamFlow?: string } = {}) => {
 		const normalizedJid = jidNormalizedUser(jid)
 		if (!isLidUser(normalizedJid) && !isPnUser(normalizedJid)) {
 			throw new Boom(`Invalid jid: ${jid}`, { statusCode: 400 })
@@ -498,7 +501,7 @@ export const makeChatsSocket = (config: SocketConfig) => {
 					tag: 'spam_list',
 					attrs: {
 						jid: normalizedJid,
-						spam_flow: 'contact_info'
+						spam_flow: options.spamFlow || 'account_info_report'
 					}
 				}
 			]
